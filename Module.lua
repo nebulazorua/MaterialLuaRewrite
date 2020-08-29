@@ -42,10 +42,10 @@ local clickEvents = {
 
 local fakeInstanceMeta={
 	__index=function(s,i)
-		if(rawget(s,i))then
+		if(rawget(s,i)~=nil)then
 			return rawget(s,i)
 		end
-		if(rawget(s,"Get"..i))then
+		if(rawget(s,"Get"..i)~=nil)then
 			return rawget(s,"Get"..i)
 		end
 		if(materialLua.Base[i])then
@@ -68,7 +68,7 @@ local fakeInstanceMeta={
 	__newindex=function(s,i,v)
 		if(rawget(s,"Set"..i))then
 			return rawget(s,"Set"..i)(s,v)
-		elseif(rawget(s,i))then
+		elseif(rawget(s,i)~=nil)then
 			return rawset(s,i,v)
 		else
 			if(rawget(s,'Inheritance'))then
@@ -93,7 +93,7 @@ local fakeInstanceMeta={
 
 local function newFIndex(t)
 	return function(s,i)
-		if(rawget(t,i))then
+		if(rawget(t,i)~=nil)then
 			return rawget(t,i)
 		else
 			return fakeInstanceMeta.__index(s,i)
@@ -102,7 +102,7 @@ local function newFIndex(t)
 end
 
 materialLua.Tab.__index=function(s,i)
-	if(rawget(s,i))then
+	if(rawget(s,i)~=nil)then
 		return rawget(s,i)
 	elseif(materialLua.Tab[i])then
 		return materialLua.Tab[i]
@@ -136,7 +136,7 @@ materialLua.TextField.__newindex=fakeInstanceMeta.__newindex
 
 local dropIdx = newFIndex(materialLua.Dropdown)
 materialLua.Dropdown.__index=function(s,i)
-	if(rawget(s,i))then
+	if(rawget(s,i)~=nil)then
 		return rawget(s,i)
 	elseif(materialLua.Dropdown[i])then
 		return materialLua.Dropdown[i]
@@ -155,7 +155,7 @@ materialLua.Dropdown.__newindex=fakeInstanceMeta.__newindex
 
 local togGIdx = newFIndex(materialLua.ToggleGroup)
 materialLua.ToggleGroup.__index=function(s,i)
-	if(rawget(s,i))then
+	if(rawget(s,i)~=nil)then
 		return rawget(s,i)
 	elseif(materialLua.ToggleGroup[i])then
 		return materialLua.ToggleGroup[i]
@@ -232,7 +232,7 @@ function materialLua.Container:NewButton(options)
 	Tween(newButton.Shadow,.15,{ImageTransparency=0})
 	Tween(textLabel,.15,{TextTransparency=0})
 	local ripple = Rippler.new(newButton,'Round',4,self:GetTheme():GetSecondary'Button')
-
+	
 	newButton:WaitForChild'Clicker'.InputBegan:connect(function(io)
 		if(clickEvents[io.UserInputType])then
 			ripple:Down(io.Position.x,io.Position.y)
@@ -310,7 +310,7 @@ function materialLua.Container:UpdateColours(recursive)
 			end)
 		end
 	end
-
+	
 end
 
 function materialLua.Tab:UpdateColours(...)
@@ -370,22 +370,21 @@ function materialLua.Container:NewColorPicker(options)
 	local pickerInst = {Component='ColorPicker';HSV={0,0,0};HueSlider=HueG;SaturationSlider=SatG;BrightnessSlider=ValG;Open=false;Value=Color3.new(1,0,0);Tracker=Tracker;Instance=Picker;Parent=self;}
 	
 	pickerInst.ThemeData={
-		[Picker]={Colour="Secondary";Component="ColorPicker"};
-		[TitleB]={Colour="Primary";Component="ColorPicker"};
-		[TitleB.Shadow]={Colour="Primary";Component="ColorPicker"};
-		[TitleT]={Colour="Primary";Component="ColorPicker"};
+		[Picker]={Colour="Primary";Component="ColorPicker"};
+		[TitleB]={Colour="Secondary";Component="ColorPicker"};
+		[TitleB.Shadow]={Colour="Secondary";Component="ColorPicker"};
+		[TitleT]={Colour="Secondary";Component="ColorPicker"};
 		[HL]={Colour="Primary";Component="ColorPicker"};
 		[SL]={Colour="Primary";Component="ColorPicker"};
 		[VL]={Colour="Primary";Component="ColorPicker"};
-		[HL.Label]={Colour="Primary";Component="ColorPicker"};
-		[SL.Label]={Colour="Primary";Component="ColorPicker"};
-		[VL.Label]={Colour="Primary";Component="ColorPicker"};
+		[HL.Label]={Colour="Secondary";Component="ColorPicker"};
+		[SL.Label]={Colour="Secondary";Component="ColorPicker"};
+		[VL.Label]={Colour="Secondary";Component="ColorPicker"};
 		[ripple]={Colour="Secondary";Component="ColorPicker"};	
 	}
 	setmetatable(pickerInst,materialLua.ColorPicker)
-	pickerInst:SetColor(options.Default or options.Color or Color3.new(1,0,0))
 	
-	TitleT.Text = options.Title or 'Taste the rainbow'
+	TitleT.Text = options.Title or options.Text or 'Taste the rainbow'
 	
 	HueG.InputBegan:connect(function(Input)
 		if(Input.UserInputType==Enum.UserInputType.MouseButton1)then
@@ -463,6 +462,7 @@ function materialLua.Container:NewColorPicker(options)
 	pickerInst:UpdateColours()
 	
 	table.insert(self.Children,pickerInst)
+	pickerInst:SetColor(options.Default or options.Color or Color3.new(1,0,0))
 	
 	Picker.Parent=self.Content
 	return pickerInst
@@ -522,11 +522,14 @@ function materialLua.Container:NewDropdown(options)
 		Dropdown:Update()
 	end)
 	
+	Dropdown.Inheritance={[label]={"Text","TextSize","TextColor3","TextStrokeColor3","TextStrokeTransparency","RichText","TextScaled","TextFits","TextTruncate","TextWrapped","TextScaled","TextXAlignment","TextYAlignment","TextBounds","LineHeight"}};
+	
 	Dropdown.Rippler=ripple
 	setmetatable(Dropdown,materialLua.Dropdown)
 	
 	table.insert(self.Children,Dropdown)
 	
+	Dropdown:UpdateColours()
 	drop.Parent=self.Content
 	return Dropdown
 end
@@ -551,9 +554,12 @@ function Round(num,numDecimalPlaces)
 end
 
 function materialLua.Toggle:SetState(state,triggeredByUser)
-	self._StateChangedEvent:Fire(state,triggeredByUser or false)
-	self.State=state
-	self:Update();
+	if(rawget(self,'Locked') and triggeredByUser)then return end
+	if(self.State~=state)then
+		self.State=state
+		self:Update();
+		self._StateChangedEvent:Fire(self.State,triggeredByUser or false)
+	end	
 end
 
 function materialLua.Slider:SetValue(value)
@@ -562,6 +568,7 @@ function materialLua.Slider:SetValue(value)
 		self.RawValue=Snap(self.RawValue,self.Steps)
 	end
 	self.Input.Text=self.RawValue
+	self._ValueChanged:Fire(self.RawValue)
 	self:Update()
 end
 
@@ -597,7 +604,10 @@ end
 function materialLua.Container:NewSlider(options)
 	local container=self;
 	local options = options or {}
+	local event = Instance.new("BindableEvent")
 	local self={
+		_ValueChanged=event;
+		ValueChanged=event.Event;
 		Component='Slider';
 		Parent=container;
 		Min=options.Min or 0;
@@ -635,7 +645,7 @@ function materialLua.Container:NewSlider(options)
 		[self.Dot]={Colour="Primary",Component="Slider"};
 		[self.Label]={Colour="Primary",Component="Slider"};
 		[self.Input]={Colour="Primary",Component="Slider"};
-		[self.ValInd]={Colour="Primary",Component="Slider"};
+		[ValueIndicator]={Colour="Primary",Component="Slider"};
 	};
 	
 	SliderInp.Text=self.RawValue
@@ -647,13 +657,6 @@ function materialLua.Container:NewSlider(options)
 	SliderTxt.TextTransparency=1
 	SliderInp.TextTransparency=1
 	
-	SliderInst.ImageColor3=container:GetTheme():GetSecondary("Slider")
-	SliderTrack.BackgroundColor3=container:GetTheme():GetPrimary("Slider")
-	SliderFill.BackgroundColor3=container:GetTheme():GetPrimary("Slider")
-	SliderDot.ImageColor3=container:GetTheme():GetPrimary("Slider")
-	SliderTxt.TextColor3=container:GetTheme():GetPrimary("Slider")
-	SliderInp.TextColor3=container:GetTheme():GetPrimary("Slider")
-	
 	Tween(SliderInst,.15,{ImageTransparency=0})
 	Tween(SliderTrack,.15,{BackgroundTransparency=.5})
 	Tween(SliderFill,.15,{BackgroundTransparency=0})
@@ -663,7 +666,7 @@ function materialLua.Container:NewSlider(options)
 	
 	setmetatable(self,materialLua.Slider)
 	self:Update()
-
+	
 	SliderInp.FocusLost:connect(function(enter,io)
 		local newVal = tonumber(SliderInp.Text)
 		if(typeof(newVal)~='number')then
@@ -708,8 +711,12 @@ function materialLua.Container:NewSlider(options)
 		end
 	end)
 	
-	table.insert(container.Children,self)
+	if(options.Callback)then
+		event.Event:connect(options.Callback)
+	end
 	
+	table.insert(container.Children,self)
+	self:UpdateColours()
 	return self
 end
 
@@ -735,9 +742,12 @@ end
 function materialLua.ToggleGroup:SetToggle(t)
 	if(not t)then return end
 	if(not table.find(self.Children,t))then return error("That is not a valid toggle!")end;
-	rawset(self,'Toggled',t)
-	for i = 1,#self.Children do
-		self.Children[i]:SetState(self.Children[i]==t)
+	if(not self.CanSelectMultiple)then
+		rawset(self,'Toggled',t)
+		for i = 1,#self.Children do
+			self.Children[i]:SetState(self.Children[i]==t)
+			self.Children[i].Locked=not self.AllowSelectingNone and self.Children[i]==t or false
+		end
 	end
 	self._NewToggleChosen:Fire(t.Text)
 end
@@ -751,6 +761,61 @@ function materialLua.ToggleGroup:GetToggle(text)
 	return self.Children[1]
 end
 
+function materialLua.ToggleGroup:AddOptions(toggleData)
+	for i,v in next, toggleData do
+		local tog;
+		if(typeof(v)=='table')then
+			v.Type=v.Type or self.Type;
+			if(typeof(i)=='string')then
+				v.Text=i;
+			end
+			tog = self:NewToggle(v)
+		elseif(typeof(v)=='string')then
+			tog = self:NewToggle{
+				Text=v;
+				Type=self.Type;
+			}
+		elseif(typeof(v)=='boolean')then
+			tog = self:NewToggle{
+				State=v;
+				Text=i;
+				Type=self.Type;
+			}
+		end
+		if(tog)then
+			tog.StateChanged:connect(function(b,n)
+				if(self.CanSelectMultiple and not self.AllowSelectingNone)then
+					local shouldLock=true;
+					for i = 1,#self.Children do
+						if(self.Children[i].State)then
+							shouldLock=false
+							break;
+						end
+					end
+					if(not shouldLock)then
+						for i = 1,#self.Children do
+							self.Children[i].Locked=false
+						end
+					else
+						tog:SetState(true)
+						tog.Locked=shouldLock
+					end
+					self._NewToggleChosen:Fire(tog.Text)
+				else
+					if(b and self.Toggled~=tog)then
+						self:SetToggle(tog)
+					end
+				end
+				local t={}
+				for i = 1,#self.Children do
+					local v = self.Children[i]
+					t[v.Text]=v.State
+				end
+				self._Changed:Fire(t)
+			end)
+		end
+	end
+end
 function materialLua.Container:NewToggleGroup(options)
 	local options = options or {}
 	local toggleData = options.Toggles or options.ToggleData or options.Options or {
@@ -761,7 +826,9 @@ function materialLua.Container:NewToggleGroup(options)
 	local groupUI = materialLua.UI.new("ToggleGroup")
 	local content = groupUI:WaitForChild'Container'
 	local togEvent = Instance.new("BindableEvent")
-	local containerObject={ToggleChanged=togEvent.Event;_NewToggleChosen=togEvent;Component='ToggleGroup';Content=content,UIList=content:WaitForChild'UIListLayout';Children={};Parent=self;}
+	local chaEvent = Instance.new("BindableEvent")
+	local containerObject={Changed=chaEvent.Event;_Changed=chaEvent;CanSelectMultiple=options.CanSelectMultiple or false;AllowSelectingNone=options.AllowEmptySelection or options.AllowSelectingNone or false;ToggleChanged=togEvent.Event;_NewToggleChosen=togEvent;Component='ToggleGroup';Content=content,UIList=content:WaitForChild'UIListLayout';Children={};Parent=self;}
+	containerObject.Type=options.Type or options.DefaultType or 4;
 	local listLayout = containerObject.UIList
 	listLayout:GetPropertyChangedSignal'AbsoluteContentSize':connect(function()
 		groupUI.Size=UDim2.new(1,0,0,listLayout.AbsoluteContentSize.Y+10)
@@ -776,48 +843,68 @@ function materialLua.Container:NewToggleGroup(options)
 			rawset(self,index,value)
 		end
 	})
+	
+	containerObject.ThemeData={
+		[groupUI]={Colour="Primary";Component="ToggleGroup"};
+		[groupUI.Shadow]={Colour="Primary";Component="ToggleGroup"};
+	}
+	
 	setmetatable(containerObject,materialLua.ToggleGroup)
 	
-	for i,v in next, toggleData do
-		local tog;
-		if(typeof(v)=='table')then
-			v.Type=v.Type or options.DefaultType or 4;
-			tog = containerObject:NewToggle(v)
-		elseif(typeof(v)=='string')then
-			tog = containerObject:NewToggle{
-				Text=v;
-				Type=options.DefaultType or 4;
-			}
-		elseif(typeof(v)=='boolean')then
-			tog = containerObject:NewToggle{
-				State=v;
-				Text=i;
-				Type=options.DefaultType or 4;
-			}
-		end
-		if(tog)then
-			tog.StateChanged:connect(function(b,n)
-				if(b and containerObject.Toggled~=tog)then
-					containerObject:SetToggle(tog)
-				elseif(not b and containerObject.Toggled==tog)then
-					containerObject:SetToggle(containerObject.Children[1])
-				end
-			end)
-		end
-	end
+	containerObject:AddOptions(toggleData)
 	
 	containerObject:SetToggle(containerObject.Children[1])
 	
-
 	groupUI.Parent=self.Content;
 	table.insert(self.Children,containerObject)
+	containerObject:UpdateColours()
 	return containerObject
 end
 
-function materialLua.TextField:SetText(txt,ent)
-	self.Textbox.Text=txt
-	self._FocusLost:Fire(txt,ent)
+function materialLua.Container:NewLegacyDropdown(options)
+	local options = options or {}
+	local dropdown = self:NewDropdown{
+		Text=options.Text;
+	}
+	local title = dropdown.Text
+	local toggle = dropdown:NewToggleGroup{
+		Options=options.Options;
+	}
+	if(options.Callback)then toggle.ToggleChanged:connect(options.Callback)end
+	
+	return {Dropdown=dropdown;Group=toggle;};
 end
+
+function materialLua.Container:NewLegacyChipSet(options)
+	local options = options or {}
+	local set = self:NewToggleGroup{
+		CanSelectMultiple=true;
+		AllowEmptySelection=true;
+		Type=2;
+		Options=options.Options;
+	}
+	if(options.Callback)then 
+		set.Changed:connect(options.Callback)
+	end
+	
+	return set
+end
+
+function materialLua.Container:NewLegacyDataTable(options)
+	local options = options or {}
+	local set = self:NewToggleGroup{
+		CanSelectMultiple=true;
+		AllowEmptySelection=true;
+		Type=3;
+		Options=options.Options;
+	}
+	if(options.Callback)then 
+		set.Changed:connect(options.Callback)
+	end
+	
+	return set
+end
+
 
 function materialLua.TextField:GetText()
 	return self.Textbox.Text;
@@ -837,17 +924,18 @@ function materialLua.Container:NewTextBox(options)
 	
 	local obj={
 		_FocusLost=event;
-		TextChanged=event;
+		TextChanged=event.Event;
 		Textbox=box;
 		Instance=textfield;
 		Effect=eff;
 		Parent=self;
 		Component='TextField';
+		Inheritance={[box]={"FocusLost","Focused","Text","TextSize","TextColor3","TextStrokeColor3","TextStrokeTransparency","RichText","TextScaled","TextFits","TextTruncate","TextWrapped","TextScaled","TextXAlignment","TextYAlignment","TextBounds","LineHeight"}};
 		ThemeData={
 			[textfield]={Colour="Primary";Component="TextBox"};
 			[eff]={Colour="Primary";Component="TextBox"};
 			[txtShadow]={Colour="Primary";Component="TextBox"};
-			[box]={Properties={PlaceholderColor3={Colour="Primary";Component="TextBox"};TextColor3={Colour="Primary";Component="TextBox"}}};
+			[box]={Properties={PlaceholderColor3={Colour="Secondary";Component="TextBox"};TextColor3={Colour="Secondary";Component="TextBox"}}};
 		};
 	}
 	
@@ -861,21 +949,36 @@ function materialLua.Container:NewTextBox(options)
 	box.FocusLost:connect(function(ent)
 		Tween(textfield,.5,{ImageTransparency=.8})
 		Tween(box,.5,{TextTransparency=.5})
-		obj:SetText(box.Text,ent)
 	end)
 	
-	textfield.Parent=self.Content
 	
+	
+	textfield.Parent=self.Content
 	table.insert(self.Children,obj)
+	obj:UpdateColours()
 	return obj;	
+end
+
+materialLua.Container.NewTextField=materialLua.Container.NewTextBox
+
+function materialLua.Container:NewLegacyTextField(options)
+	local options = options or {}
+	options.PlaceholderText=options.Text
+	options.Text=''
+	
+	local box = self:NewTextBox(options)
+	if(options.Callback)then
+		box.FocusLost:connect(options.Callback)
+	end
+	return box
 end
 
 function materialLua.Container:NewToggle(options)
 	local options = options or {}
 	local Type = options.Type or self:GetTheme().ToggleType or 1;
 	local stateChanged = Instance.new("BindableEvent")
-	local ToggleInstance={Component='Toggle';Parent=self;_StateChangedEvent=stateChanged;StateChanged=stateChanged.Event;Type=Type;State=options.Default and true or options.State and true or false;};
-	if(Type=='Switch' or Type==1)then
+	local ToggleInstance={Locked=false;Component='Toggle';Parent=self;_StateChangedEvent=stateChanged;StateChanged=stateChanged.Event;Type=Type;State=options.Default and true or options.State and true or options.Enabled and true or false;};
+	if(Type==1)then
 		local Switch = materialLua.UI.new("Switch")
 		ToggleInstance.Instance=Switch
 		local Tracker = Switch:WaitForChild'Tracker'
@@ -899,7 +1002,6 @@ function materialLua.Container:NewToggle(options)
 			[Switch]='Primary';
 			[Tracker]='Primary';
 			[Hover]='Primary';
-			[Dot.Shadow]='Primary';
 			[Dot]='Secondary';
 			[Text]='Primary';
 		}
@@ -976,11 +1078,12 @@ function materialLua.Container:NewToggle(options)
 		Check.ImageTransparency=1
 		
 		Label.Text = options.Text or 'Checkmark'
-
+		
 		ToggleInstance.ThemeData={
 			[Check]='Secondary';
 			[Shadow]='Secondary';
 			[Label]='Primary';
+			[Mark]='Secondary';
 		}
 		
 		Tween(Label,.15,{TextTransparency=0})
@@ -1081,6 +1184,10 @@ function materialLua.Container:NewToggle(options)
 		error("Toggle can only be Type 1, 2, 3 or 4!")
 	end
 	
+	
+	if(options.Callback)then
+		ToggleInstance.StateChanged:connect(options.Callback)
+	end
 	ToggleInstance.Instance.Parent=self.Content
 	setmetatable(ToggleInstance,materialLua.Toggle)
 	
@@ -1227,12 +1334,9 @@ end
 
 function materialLua.new(options)
 	local options = options or {}
-	local theme =options.Theme or { -- TODO: custom themes
-		Primary = Color3.fromRGB(124,37,255);
-		Secondary = Color3.fromRGB(255,255,255);
-	};
+	local theme = typeof(options.Theme)=='table' and options.Theme or typeof(options.Theme)=='string' and materialLua.Theme.Presets[options.Theme] or materialLua.Theme.Presets.Default
 	if(typeof(theme)=='table' and not theme.GetPrimary)then
-		theme=materialLua.Theme.new(theme.Primary,theme.Secondary)
+		theme=materialLua.Theme.fromTable(theme)
 	end
 	
 	options.Size = options.Size or Vector2.new(350,350)
@@ -1262,11 +1366,11 @@ function materialLua.new(options)
 		ScreenGui=SGui;
 		Minimised=false;
 		ThemeData={
-			[mainFrame]={Colour="Secondary";Component="Mainframe"};
-			[mainFrame.Shadow]={Colour="Secondary";Component="Mainframe"};
+			[mainFrame]={Colour="Secondary";Component="MainFrame"};
+			[mainFrame.Shadow]={Colour="Secondary";Component="MainFrame"};
 			[navBar]={Colour="Primary";Component="NavBar"};
 			[navBar.Shadow]={Colour="Primary";Component="NavBar"};
-			[content]={Colour="Primary";Component="Mainframe"};
+			[content]={Colour="Primary";Component="MainFrame"};
 			[titleBar]={Colour="Primary";Component="TitleBar"};
 			[titleBar.Shadow]={Colour="Primary";Component="TitleBar"};
 			[titleBar.Hidden]={Colour="Primary";Component="TitleBar"};
@@ -1298,32 +1402,30 @@ function materialLua.Load(options)
 	local rOptions = {
 		Size=Vector2.new(options.SizeX or 500,options.SizeY or 350);
 		Title=options.Title;
+		Theme=options.Theme;
 	}
 	local realObj = materialLua.new(rOptions)
 	local proxyObj = {New=function(...)
-		local realTab=realObj:NewTab(...) 
-		local proxyTab={}
-		setmetatable(proxyTab,{
-			__index=function(s,i)
-				if(i:sub(1,3)=='New' and realTab["NewLegacy"..i:sub(4)] and realTab["New"..i:sub(4)])then
-					return function(...)
-						return realTab["New"..i:sub(4)](realTab,...)
+			local realTab=realObj:NewTab(...) 
+			local proxyTab={}
+			setmetatable(proxyTab,{
+				__index=function(s,i)
+					print(i)
+					if(realTab["NewLegacy"..i])then
+						return function(...)
+							return realTab["NewLegacy"..i](realTab,...)
+						end	
+					elseif(realTab["New"..i])then
+						return function(...)
+							return realTab["New"..i](realTab,...)
+						end
+					else
+						return rawget(realTab,i)
 					end
-				elseif(realTab["NewLegacy"..i])then
-					return function(...)
-						return realTab["NewLegacy"..i](realTab,...)
-					end	
-				elseif(realTab["New"..i])then
-					return function(...)
-						return realTab["New"..i](realTab,...)
-					end
-				else
-					return rawget(realTab,i)
 				end
-			end
-		})
-		return proxyTab
-	end}
+			})
+			return proxyTab
+		end}
 	return proxyObj
 end
 
