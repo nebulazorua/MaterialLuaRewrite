@@ -3,7 +3,8 @@ local Material = script:FindFirstChild'core' and require(script.core) or loadstr
 
 local window = Material.new{
 	Title='Hub';
-	Size=Vector2.new(500,400)
+	Size=Vector2.new(500,400);
+	Theme=Material.Theme.Presets.Dark;
 }
 
 local t1 = window:NewTab{
@@ -102,3 +103,5 @@ t1:NewTextBox{
 	Default='Default Text';
 	ClearTextOnFocus=false;
 }
+
+t1:NewLegacyDropdown{}
