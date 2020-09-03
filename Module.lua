@@ -1,5 +1,17 @@
-local Exploit = (game:service'RunService':IsStudio() and false or (is_protosmasher_caller or pebc_load) and 'Protosmasher' or syn and 'Synapse' or getgenv and 'Some other misc exploit' or (function()local s,e=pcall(function()return Instance.new("Glue",game.CoreGui);end) return s and 'Axon Skidsploit' or false end)()) or false
-
+local Exploit = (
+	(syn and not is_sirhurt_closure and not pebc_execute and "Synapse") or 
+	(secure_load and "Sentinel") or
+	(is_sirhurt_closure and "Sirhurt") or
+	(pebc_execute and "ProtoSmasher") or
+	(KRNL_LOADED and "Krnl") or
+	(WrapGlobal and "WeAreDevs") or
+	(isvm and "Proxo") or
+	(shadow_env and "Shadow") or
+	(jit and "EasyExploits") or
+	(getreg()['CalamariLuaEnv'] and "Calamari") or
+	(unit and "Unit") or
+	("Undetectable")
+)	
 local Player = game:service'Players'.localPlayer
 local Studio = game:service'RunService':IsStudio()
 local Drag = not Exploit and require(script:WaitForChild'Drag') or loadstring(game:HttpGet'https://raw.githubusercontent.com/supersonicfan111/exploitstuff/master/guidragmodule.lua')()
@@ -1238,6 +1250,7 @@ end
 
 function materialLua.MainFrame:SetTitle(title)
 	local titleBar = self.TitleBar;
+	self.ScreenGui.Name=title
 	self.Title=title
 	self.TitleText.Text=title;
 end
@@ -1252,10 +1265,13 @@ function materialLua.MainFrame:Init()-- TODO: theming
 	local navBarContent = navBar:WaitForChild'Content'
 	
 	self:UpdateColours(false)
-	
+	local Parent  =not Exploit and Player.PlayerGui or game.CoreGui
+	if(Parent:FindFirstChild(self.ScreenGui.Name))then
+		Parent[self.ScreenGui.Name]:destroy()			
+	end
 	self:SetTitle(self.Title)
 	self.MainFrame.Size=UDim2.new(0,0,0,self.Size.Y)
-	self.ScreenGui.Parent=not Exploit and Player.PlayerGui or game.CoreGui
+	self.ScreenGui.Parent=Parent
 	Tween(self.MainFrame,1,{Size=UDim2.new(0,self.Size.X,0,self.Size.Y)}).Completed:wait()
 	for _,v in next, self do
 		if(typeof(v)=='Instance' and v:IsA'GuiObject')then
@@ -1343,6 +1359,8 @@ function materialLua.new(options)
 	local SGui = Instance.new("ScreenGui")
 	SGui.DisplayOrder=1e9
 	SGui.IgnoreGuiInset=true
+	SGui.Name=options.Title
+	
 	local mainFrame = materialLua.UI.new("MainFrame",SGui)
 	mainFrame.Shadow.ImageTransparency=1
 	mainFrame.Position=UDim2.new(0.5,-options.Size.X/2,0.5,-options.Size.Y/2)
