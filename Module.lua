@@ -1,4 +1,5 @@
 local Exploit = (
+	(game:service'RunService':IsStudio() and "Studio") or
 	(syn and not is_sirhurt_closure and not pebc_execute and "Synapse") or 
 	(secure_load and "Sentinel") or
 	(is_sirhurt_closure and "Sirhurt") or
@@ -8,20 +9,23 @@ local Exploit = (
 	(isvm and "Proxo") or
 	(shadow_env and "Shadow") or
 	(jit and "EasyExploits") or
-	(getreg()['CalamariLuaEnv'] and "Calamari") or
+	(getreg and getreg()['CalamariLuaEnv'] and "Calamari") or
 	(unit and "Unit") or
 	("Undetectable")
-)	
+)
+
+local RunningOnExploit = Exploit~='Studio' and Exploit~='Undetectable'
+
 local Player = game:service'Players'.localPlayer
 local Studio = game:service'RunService':IsStudio()
-local Drag = not Exploit and require(script:WaitForChild'Drag') or loadstring(game:HttpGet'https://raw.githubusercontent.com/supersonicfan111/exploitstuff/master/guidragmodule.lua')()
-local Rippler = Exploit and loadstring(game:HttpGet'https://raw.githubusercontent.com/supersonicfan111/MaterialLuaRewrite/master/rippler.lua')() or require(script:WaitForChild'Rippler')
+local Drag = not RunningOnExploit and require(script:WaitForChild'Drag') or loadstring(game:HttpGet'https://raw.githubusercontent.com/supersonicfan111/exploitstuff/master/guidragmodule.lua')()
+local Rippler = RunningOnExploit and loadstring(game:HttpGet'https://raw.githubusercontent.com/supersonicfan111/MaterialLuaRewrite/master/rippler.lua')() or require(script:WaitForChild'Rippler')
 local UserInput = game:service'UserInputService'
 
 local materialLua = {}
-local uiFolder= Exploit and game:GetObjects"rbxassetid://5615885279"[1] or script:WaitForChild'UIs'
+local uiFolder= Exploit~='Studio' and Exploit~='Undetectable' and game:GetObjects"rbxassetid://5615885279"[1] or script:WaitForChild'UIs'
 uiFolder.Parent=nil
-materialLua.Theme=Exploit and loadstring(game:HttpGet'https://raw.githubusercontent.com/supersonicfan111/MaterialLuaRewrite/master/Theme.lua')() or require(script:WaitForChild'Theme')
+materialLua.Theme=RunningOnExploit and loadstring(game:HttpGet'https://raw.githubusercontent.com/supersonicfan111/MaterialLuaRewrite/master/Theme.lua')() or require(script:WaitForChild'Theme')
 
 materialLua.Container={}
 materialLua.MainFrame={}
@@ -1218,6 +1222,7 @@ function materialLua.MainFrame:NewTab(options) -- TODO: images
 	local navBarContent = navBar:WaitForChild'Content'
 	
 	local Button = materialLua.UI.new("Tab")
+	Button.LayoutOrder=#self.Tabs+1
 	local TextSize = game:service'TextService':GetTextSize(Display,Button.TextSize,Button.Font,Vector2.new(9e9,9e9)).X
 	Button.Name = Name
 	Button.Text = Display
@@ -1265,7 +1270,7 @@ function materialLua.MainFrame:Init()-- TODO: theming
 	local navBarContent = navBar:WaitForChild'Content'
 	
 	self:UpdateColours(false)
-	local Parent  =not Exploit and Player.PlayerGui or game.CoreGui
+	local Parent  =not RunningOnExploit and Player.PlayerGui or game.CoreGui
 	if(Parent:FindFirstChild(self.ScreenGui.Name))then
 		Parent[self.ScreenGui.Name]:destroy()			
 	end
@@ -1283,6 +1288,7 @@ function materialLua.MainFrame:Init()-- TODO: theming
 	end
 	wait(1)
 end
+
 
 function materialLua.UI.new(object,parent) -- TODO: (style,object,parent)
 	local gui = uiFolder:FindFirstChild(object)
@@ -1360,13 +1366,17 @@ function materialLua.new(options)
 	SGui.DisplayOrder=1e9
 	SGui.IgnoreGuiInset=true
 	SGui.Name=options.Title
-	
 	local mainFrame = materialLua.UI.new("MainFrame",SGui)
 	mainFrame.Shadow.ImageTransparency=1
 	mainFrame.Position=UDim2.new(0.5,-options.Size.X/2,0.5,-options.Size.Y/2)
 	local navBar = materialLua.UI.new("NavBar",mainFrame)
 	navBar.ImageTransparency=1
 	navBar.Shadow.ImageTransparency=1
+	--[[local navBar;
+	local navbarType=options.NavbarType or options.Style
+	if(navbarType==3)then
+		
+	end]] -- TODO: navbar types
 	local content = mainFrame:WaitForChild'Content'
 	content.ImageTransparency=1
 	local titleBar = mainFrame:WaitForChild'TitleBar'
@@ -1388,7 +1398,7 @@ function materialLua.new(options)
 			[mainFrame.Shadow]={Colour="Secondary";Component="MainFrame"};
 			[navBar]={Colour="Primary";Component="NavBar"};
 			[navBar.Shadow]={Colour="Primary";Component="NavBar"};
-			[content]={Colour="Primary";Component="MainFrame"};
+			[content]={Colour="Primary";Component="MainFrame"};	
 			[titleBar]={Colour="Primary";Component="TitleBar"};
 			[titleBar.Shadow]={Colour="Primary";Component="TitleBar"};
 			[titleBar.Hidden]={Colour="Primary";Component="TitleBar"};
