@@ -663,6 +663,7 @@ function materialLua.Container:NewSlider(options)
 		[self.Input]={Colour="Primary",Component="Slider"};
 		[ValueIndicator]={Colour="Primary",Component="Slider"};
 	};
+	self.Inheritance={[SliderTxt]={"FocusLost","Focused","Text","TextSize","TextColor3","TextStrokeColor3","TextStrokeTransparency","RichText","TextScaled","TextFits","TextTruncate","TextWrapped","TextScaled","TextXAlignment","TextYAlignment","TextBounds","LineHeight"}};
 	
 	SliderInp.Text=self.RawValue
 	
@@ -682,7 +683,6 @@ function materialLua.Container:NewSlider(options)
 	
 	setmetatable(self,materialLua.Slider)
 	self:Update()
-	
 	SliderInp.FocusLost:connect(function(enter,io)
 		local newVal = tonumber(SliderInp.Text)
 		if(typeof(newVal)~='number')then
