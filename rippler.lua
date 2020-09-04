@@ -139,7 +139,8 @@ local Values={
 	BrickColor="BrickColorValue";
 }
 
-function Tween(Inst,Time,Properties,EStyle,EDir,Repeat,Rev,Delay,Yield,DestroyOnFinish)
+local s = {}
+function s.Tween(Inst,Time,Properties,EStyle,EDir,Repeat,Rev,Delay,Yield,DestroyOnFinish)
 	local tw;
 	print(typeof(Inst))
 	if(typeof(Inst)=='table')then
@@ -154,7 +155,7 @@ function Tween(Inst,Time,Properties,EStyle,EDir,Repeat,Rev,Delay,Yield,DestroyOn
 						game:service'RunService'.Stepped:wait()
 					end
 				end)()
-				table.insert(tweens,{I=Inst,Tween(I,Time,{Value=v},EStyle,EDir,Repeat,Rev,Delay,Yield)})
+				table.insert(tweens,{I=Inst,s.Tween(I,Time,{Value=v},EStyle,EDir,Repeat,Rev,Delay,Yield)})
 				tweens[#tweens][1].Completed:connect(function()I:destroy();I=nil;end)
 			elseif(typeof(v)=='UDim2')then
 				local I = Instance.new("Frame")
@@ -165,7 +166,7 @@ function Tween(Inst,Time,Properties,EStyle,EDir,Repeat,Rev,Delay,Yield,DestroyOn
 						game:service'RunService'.Stepped:wait()
 					end
 				end)()
-				table.insert(tweens,{I=Inst,Tween(I,Time,{Size=v},EStyle,EDir,Repeat,Rev,Delay,Yield)})
+				table.insert(tweens,{I=Inst,s.Tween(I,Time,{Size=v},EStyle,EDir,Repeat,Rev,Delay,Yield)})
 				tweens[#tweens][1].Completed:connect(function()I:destroy();I=nil;end)
 			end
 		end
@@ -292,7 +293,7 @@ local function newRipple(parent,style,radius,color)
 	local function SetCurrentRipple(Ripple)
 		if CurrentRipple then
 			local Rip = CurrentRipple
-			Tween(CurrentRipple,1,{ImageTransparency=1}).Completed:connect(function()Rip:Destroy()end)
+			s.Tween(CurrentRipple,1,{ImageTransparency=1}).Completed:connect(function()Rip:Destroy()end)
 		end
 
 		CurrentRipple = Ripple
@@ -358,7 +359,7 @@ local function newRipple(parent,style,radius,color)
 
 		SetCurrentRipple(Ripple)
 		
-		Tween(Ripple,.5,{Size=UDim2.new(0,Diameter,0,Diameter)})
+		s.Tween(Ripple,.5,{Size=UDim2.new(0,Diameter,0,Diameter)})
 	end
 	
 	local function up()
