@@ -141,6 +141,7 @@ local Values={
 
 function Tween(Inst,Time,Properties,EStyle,EDir,Repeat,Rev,Delay,Yield,DestroyOnFinish)
 	local tw;
+	print(typeof(Inst))
 	if(typeof(Inst)=='table')then
 		local tweens={}
 		for i,v in next, Properties do
