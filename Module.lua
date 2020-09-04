@@ -1244,8 +1244,7 @@ function materialLua.MainFrame:NewTab(options) -- TODO: images
 	uiList:GetPropertyChangedSignal"AbsoluteContentSize":connect(function()
 		ContentFrame.CanvasSize=UDim2.new(0,0,0,uiList.AbsoluteContentSize.Y+10)
 	end)
-	Button.LayoutOrder=0
-	for i = 1,#self.Tabs do self.Tabs[i].Button.LayoutOrder+=1 end
+	Button.LayoutOrder=#self.Tabs
 	ContainerObj:Update()
 	Button.MouseButton1Down:connect(function()
 		ContainerObj:Show()
