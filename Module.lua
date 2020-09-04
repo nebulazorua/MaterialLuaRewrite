@@ -1320,7 +1320,7 @@ function materialLua.MainFrame:Minimise()
 	self.ThemeData[self.MinimiseButton]={Colour="Primary";Component="Maximise"};
 	pcall(function()self.ThemeData[self.MinimiseButton.Shadow]={Colour="Secondary";Component="Maximise"};end)
 	self.MainFrame.ClipsDescendants=true
-	Tween(self.MainFrame,.15,{Size=UDim2.new(0,self.Size.X,0,30)})
+	Tween(self.MainFrame,.15,{Size=UDim2.new(0,self.Size.X,0,25)})
 	Tween(self.MinimiseButton,.15,{ImageColor3=self:GetTheme():GetPrimary'Maximise'})
 	pcall(function()Tween(self.MinimiseButton.Shadow,.15,{ImageColor3=self:GetTheme():GetSecondary'Maximise'})end)
 	pcall(function()Tween(self.MainFrame.Shadow,.15,{ImageTransparency=0})end)
