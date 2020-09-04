@@ -1222,8 +1222,6 @@ function materialLua.MainFrame:NewTab(options) -- TODO: images
 	local navBarContent = navBar:WaitForChild'Content'
 	
 	local Button = materialLua.UI.new("Tab")
-	Button.LayoutOrder=0
-	for i = 1,#self.Tabs do self.Tabs[i].Button.LayoutOrder+=1 end
 	local TextSize = game:service'TextService':GetTextSize(Display,Button.TextSize,Button.Font,Vector2.new(9e9,9e9)).X
 	Button.Name = Name
 	Button.Text = Display
@@ -1246,6 +1244,8 @@ function materialLua.MainFrame:NewTab(options) -- TODO: images
 	uiList:GetPropertyChangedSignal"AbsoluteContentSize":connect(function()
 		ContentFrame.CanvasSize=UDim2.new(0,0,0,uiList.AbsoluteContentSize.Y+10)
 	end)
+	Button.LayoutOrder=0
+	for i = 1,#self.Tabs do self.Tabs[i].Button.LayoutOrder+=1 end
 	ContainerObj:Update()
 	Button.MouseButton1Down:connect(function()
 		ContainerObj:Show()
