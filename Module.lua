@@ -42,10 +42,10 @@ materialLua.ColorPicker={}
 local function OnCompleted(tw,callback,status)
 	local conn;
 	conn=tw.Completed:connect(function(state)
-		conn:disconnect()
-		if(state==(status or Enum.TweenStatus.Completed))then
+		if(state==(status or Enum.PlaybackState.Completed))then
 			callback()
 		end
+		conn:disconnect()
 	end)
 	return conn;
 end
@@ -386,17 +386,17 @@ function materialLua.Container:NewColorPicker(options)
 	local pickerInst = {Component='ColorPicker';HSV={0,0,0};HueSlider=HueG;SaturationSlider=SatG;BrightnessSlider=ValG;Open=false;Value=Color3.new(1,0,0);Tracker=Tracker;Instance=Picker;Parent=self;}
 	
 	pickerInst.ThemeData={
-		[Picker]={Colour="Primary";Component="ColorPicker"};
-		[TitleB]={Colour="Secondary";Component="ColorPicker"};
-		[TitleB.Shadow]={Colour="Secondary";Component="ColorPicker"};
-		[TitleT]={Colour="Secondary";Component="ColorPicker"};
-		[HL]={Colour="Primary";Component="ColorPicker"};
-		[SL]={Colour="Primary";Component="ColorPicker"};
-		[VL]={Colour="Primary";Component="ColorPicker"};
-		[HL.Label]={Colour="Secondary";Component="ColorPicker"};
-		[SL.Label]={Colour="Secondary";Component="ColorPicker"};
-		[VL.Label]={Colour="Secondary";Component="ColorPicker"};
-		[ripple]={Colour="Secondary";Component="ColorPicker"};	
+		[Picker]={Colour="Secondary";Component="ColorPicker"};
+		[TitleB]={Colour="Primary";Component="ColorPicker"};
+		[TitleB.Shadow]={Colour="Primary";Component="ColorPicker"};
+		[TitleT]={Colour="Primary";Component="ColorPicker"};
+		[HL]={Colour="Secondary";Component="ColorPicker"};
+		[SL]={Colour="Secondary";Component="ColorPicker"};
+		[VL]={Colour="Secondary";Component="ColorPicker"};
+		[HL.Label]={Colour="Primary";Component="ColorPicker"};
+		[SL.Label]={Colour="Primary";Component="ColorPicker"};
+		[VL.Label]={Colour="Primary";Component="ColorPicker"};
+		[ripple]={Colour="Primary";Component="ColorPicker"};	
 	}
 	setmetatable(pickerInst,materialLua.ColorPicker)
 	
@@ -1320,19 +1320,20 @@ function materialLua.MainFrame:Minimise()
 	self.ThemeData[self.MinimiseButton]={Colour="Primary";Component="Maximise"};
 	pcall(function()self.ThemeData[self.MinimiseButton.Shadow]={Colour="Secondary";Component="Maximise"};end)
 	self.MainFrame.ClipsDescendants=true
-	Tween(self.MainFrame,.15,{Size=UDim2.new(0,self.Size.X,0,25)})
+	Tween(self.MainFrame,.15,{Size=UDim2.new(0,self.Size.X,0,30)})
 	Tween(self.MinimiseButton,.15,{ImageColor3=self:GetTheme():GetPrimary'Maximise'})
 	pcall(function()Tween(self.MinimiseButton.Shadow,.15,{ImageColor3=self:GetTheme():GetSecondary'Maximise'})end)
-	pcall(function()Tween(self.MainFrame.Shadow,.15,{ImageTransparency=0})end)
+	pcall(function()local t = Tween(self.MainFrame.Shadow,.15,{ImageTransparency=0});local conn; conn = t.Completed:connect(function(st)if(st == Enum.PlaybackState.Completed)then self.Content.Visible=false end conn:disconnect();end) end)
+	
 end
 
 function materialLua.MainFrame:Maximise()
 	self.Minimised=false
 	self.ThemeData[self.MinimiseButton]={Colour="Primary";Component="Minimise"};
 	pcall(function()self.ThemeData[self.MinimiseButton.Shadow]={Colour="Secondary";Component="Minimise"};end)
-	OnCompleted(Tween(self.MainFrame,.15,{Size=UDim2.new(0,self.Size.X,0,self.Size.Y)}),function()
-		self.MainFrame.ClipsDescendants=false
-	end)
+	self.MainFrame.ClipsDescendants=false
+	self.Content.Visible=true
+	Tween(self.MainFrame,.15,{Size=UDim2.new(0,self.Size.X,0,self.Size.Y)})
 	Tween(self.MinimiseButton,.15,{ImageColor3=self:GetTheme():GetPrimary'Minimise'})
 	pcall(function()Tween(self.MinimiseButton.Shadow,.15,{ImageColor3=self:GetTheme():GetSecondary'Minimise'})end)
 	pcall(function()Tween(self.MainFrame.Shadow,.15,{ImageTransparency=1})end)
@@ -1372,11 +1373,6 @@ function materialLua.new(options)
 	local navBar = materialLua.UI.new("NavBar",mainFrame)
 	navBar.ImageTransparency=1
 	navBar.Shadow.ImageTransparency=1
-	--[[local navBar;
-	local navbarType=options.NavbarType or options.Style
-	if(navbarType==3)then
-		
-	end]] -- TODO: navbar types
 	local content = mainFrame:WaitForChild'Content'
 	content.ImageTransparency=1
 	local titleBar = mainFrame:WaitForChild'TitleBar'
@@ -1438,7 +1434,6 @@ function materialLua.Load(options)
 			local proxyTab={}
 			setmetatable(proxyTab,{
 				__index=function(s,i)
-					print(i)
 					if(realTab["NewLegacy"..i])then
 						return function(...)
 							return realTab["NewLegacy"..i](realTab,...)
