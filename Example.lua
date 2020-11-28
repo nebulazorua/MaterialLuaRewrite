@@ -1,10 +1,14 @@
 wait(2)
 local Material = script:FindFirstChild'core' and require(script.core) or loadstring(game:HttpGet'https://raw.githubusercontent.com/supersonicfan111/MaterialLuaRewrite/master/Module.lua')()
+local RNG = Random.new()
+function RandomColor()
+	return Color3.fromRGB(RNG:NextInteger(0,255),RNG:NextInteger(0,255),RNG:NextInteger(0,255))
+end
 
 local window = Material.new{
 	Title='Hub';
 	Size=Vector2.new(500,400);
-	Theme=Material.Theme.Presets.Dark;
+	--Theme=Material.Theme.Presets.Dark;
 }
 
 local t1 = window:NewTab{
@@ -24,10 +28,17 @@ local b=t1:NewButton{
 }
 
 b.MouseButton1Click:connect(function()
-	local Primary = Color3.fromRGB(Random.new():NextInteger(0,255),Random.new():NextInteger(0,255),Random.new():NextInteger(0,255))
-	local Secondary = Color3.fromRGB(Random.new():NextInteger(0,255),Random.new():NextInteger(0,255),Random.new():NextInteger(0,255))
+	local Primary = RandomColor()
+	local Secondary = RandomColor()
+	local Components = {}
+	for component,data in next, Material.Theme.Presets.Default.Components do
+		Components[component]={}
+		for name,_ in next,data do
+			Components[component][name]=RandomColor()
+		end
+	end
 	
-	window:SetTheme(Material.Theme.new(Primary,Secondary))
+	window:SetTheme(Material.Theme.new(Primary,Secondary,{}))
 end)
 
 local t=t1:NewToggle{
