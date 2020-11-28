@@ -7,7 +7,6 @@ theme.Presets={
 		Secondary=Color3.fromRGB(255,255,255);
 		Components={
 			TextBox={Secondary=Color3.fromRGB(124,37,255)};
-			ColorPicker={Primary=Color3.fromRGB(255,255,255);Secondary=Color3.fromRGB(124,37,255);};
 		};
 	};
 }
